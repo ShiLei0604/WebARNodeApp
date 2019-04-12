@@ -24,6 +24,7 @@
     //2.再配置で元のモデルを削除する
       AFRAME.registerComponent('tap-place', {
         init: function() {
+          alert('タップ')
           const camera = document.getElementById('camera')
           const ground = document.getElementById('ground')
 
@@ -63,8 +64,7 @@
             //リセットボタンでモデル削除
             document.getElementById('removeButton').onclick = function(){
               document.getElementById('clicked').innerText = 'リセット'
-          }
-          alert('hello a-frame')
+            }
           })
         }
       })
