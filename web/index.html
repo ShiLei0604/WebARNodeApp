@@ -3,8 +3,142 @@
     <head>
         <meta charset="utf-8">
         <title>8th Wall Web with Node.js</title>
+
+        <!-- We've included a slightly modified version of A-Frame, which fixes some polish concerns -->
+        <script src="//cdn.8thwall.com/web/aframe/8frame-0.8.2.min.js"></script>
+        <script src="//cdn.8thwall.com/web/aframe/aframe-animation-component-5.1.2.min.js"></script>
+        <script src="https://unpkg.com/aframe-html-shader@0.2.0/dist/aframe-html-shader.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.js"></script>
+        <script defer src="//cdn.8thwall.com/web/xrextras/xrextras.js"></script>
+        <script async src="//apps.8thwall.com/xrweb?appKey=vKhJlhvA0r3OnIRAmBOoesZyY1IhB6jVHXixlA3poJhieLidFHaARD3CwVYrnYPTYvuc1G"></script>
+
+        <script>      
+                //TODO:
+                //1.モデル配置場所を決める
+                //2.再配置で元のモデルを削除する
+                  AFRAME.registerComponent('tap-place', {
+                    init: function() {
+                      const camera = document.getElementById('camera')
+                      const ground = document.getElementById('ground')
+            
+                      //決定ボタンクリックでタップイベント発生
+                      document.getElementById('placeButton').onclick = function(){
+                        ground.click()
+                      }
+            
+                      ground.addEventListener('click', event => {
+                        const newElement = document.createElement('a-entity')
+            
+                        //const touchPoint = event.detail.intersection.point
+                        var width = document.getElementById('width').value
+                        var depth = document.getElementById('depth').value
+                        var height = document.getElementById('height').value
+                        this.scale = new THREE.Vector3(width, depth, height)
+            
+                        //this.position = new THREE.Vector3(camera.object3D.position.x, camera.object3D.position.y, camera.object3D.position.z - 5);
+                        newElement.setAttribute('position', '0 2 -5')
+            
+                        // const randomYRotation = Math.random() * 360
+                        // newElement.setAttribute('rotation', '0 ' + randomYRotation + ' 0')
+            
+                        newElement.setAttribute('visible', 'false')
+                        newElement.setAttribute('scale', '0.0001 0.0001 0.0001')
+            
+                        newElement.setAttribute('gltf-model', '#treeModel')
+                        this.el.sceneEl.appendChild(newElement)
+                        document.getElementById('clicked').innerText = width + ', ' + depth + ', ' + height
+            
+                        newElement.addEventListener('model-loaded', () => {
+                          // Once the model is loaded, we are ready to show it popping in using an animation
+                          newElement.setAttribute('visible', 'true')
+                          newElement.setAttribute('scale', this.scale)
+                        })
+            
+                        //リセットボタンでモデル削除
+                        document.getElementById('removeButton').onclick = function(){
+                          document.getElementById('clicked').innerText = 'リセット'
+                      }
+            
+            
+                      })
+                    },
+                    remove: function(){
+                        //リセットボタンでモデル削除
+                        document.getElementById('removeButton').onclick = function(){
+                          document.getElementById('clicked').innerText = 'リセット'
+                          newElement.parentNode.removeChild(newElement)
+                      }
+                    }
+                  })
+                </script>
+            
+                <!-- CSS -->
+                <style type="text/css">
+                  #text1 {
+                    position: fixed;
+                    /*以下装飾*/
+                    width: 100%;
+                    background: rgb(213, 216, 215);
+                    color:rgb(240, 69, 1);
+                    z-index: 999;
+            }
+                </style>
     </head>
     <body>
-        <h1>A-Frame</h1>
-    </body>
+            <div id="text1" class="target">
+                <h3>A-Frame</h3>
+                <form>
+                    <p>横幅：<input type="text" id="width" size="20"></p>
+                    <p>奥行き：<input type="text" id="depth" size="20"></p>
+                    <p>高さ：<input type="text" id="height" size="20"></p>
+                    <p><input type="button" value="決定" id="placeButton">
+                      <input type="reset" value="リセット" id="removeButton"></p>
+                    <p id="clicked">not clicked yet</p>
+                </form>
+            </div>
+      
+          <!-- We must add the tap-place component to the scene so it has an effect -->
+          <a-scene
+            xrweb
+            tap-place
+            xrextras-almost-there
+            xrextras-loading
+            xrextras-runtime-error>
+      
+            <!-- We can define assets here to be loaded when A-Frame initializes -->
+            <a-assets>
+              <a-asset-item id="treeModel" src="https://airblob.blob.core.windows.net/anyfile/box.glb"></a-asset-item>
+            </a-assets>
+      
+            <a-camera
+              position="0 1.8 0"
+              raycaster="objects: .cantap"
+              cursor="
+                fuse: true;
+                rayOrigin: mouse;"
+              geometry="primitive: ring"
+              material="color: blue; shader: flat"
+              >
+            </a-camera>
+      
+            <a-entity
+              light="type: directional;
+                     intensity: 0.8;"
+              position="1 4.3 2.5">
+            </a-entity>
+      
+            <a-light type="ambient" intensity="1"></a-light>
+      
+            <!-- Adding the cantap class allows the ground to be clicked -->
+            <a-entity
+              id="ground"
+              class="cantap"
+              geometry="primitive: plane"
+              rotation="-90 0 0"
+              material="color: #ffffff; transparent: false; opacity: 0.5"
+              scale="5 5 5"
+              position="0 0 -5">
+            </a-entity>
+          </a-scene>
+        </body>
 </html>
